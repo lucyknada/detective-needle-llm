@@ -1,6 +1,7 @@
 {
   "ENDPOINT": "http://localhost:8000",
   "API_KEY": "",
+  "CONCURRENCY": 5,
   "NEEDLE_ATTEMPTS": 1,
   "MODEL_NAME": "casperhansen/llama-3-8b-instruct-awq",
   "CONTEXT_LENGTH_START": 1024,
