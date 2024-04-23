@@ -2,7 +2,7 @@ module.exports = {
   predict: async (input, template, model, endpoint, api_key) => {
     const payload = {
       model,
-      prompt: template.PROMPT.replace("{{{INPUT}}}}", input),
+      prompt: template.PROMPT.replace("{{{INPUT}}}", input),
       stream: false,
       max_tokens: 512,
       stop: template.STOP
