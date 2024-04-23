@@ -1,3 +1,5 @@
+![logo](logo.jpeg)
+
 # detective needle test
 
 a deterministic way to needle test without AI judges, compatible with all oAI endpoints, including tabby and vllm.
