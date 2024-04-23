@@ -8,6 +8,7 @@
   "MODEL_CONTEXT_LENGTH": 32768,
   "NEEDLE_PREFIX": "Author note: the password is",
   "NEEDLE_QUESTION": "User: What is the password the author mentioned?",
+  "NEEDLE_LENGTH": 36,
   "TEMPLATE": {
     "PROMPT": "<|start_header_id|>user<|end_header_id|>\n\n{{{INPUT}}}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
     "STOP": "<|eot_id|>"
