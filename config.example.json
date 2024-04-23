@@ -1,0 +1,14 @@
+{
+  "ENDPOINT": "http://localhost:8000",
+  "API_KEY": "",
+  "NEEDLE_ATTEMPTS": 1,
+  "MODEL_NAME": "casperhansen/llama-3-8b-instruct-awq",
+  "CONTEXT_LENGTH_START": 1024,
+  "MODEL_CONTEXT_LENGTH": 32768,
+  "NEEDLE_PREFIX": "Author note: the password is",
+  "NEEDLE_QUESTION": "User: What is the password the author mentioned?",
+  "TEMPLATE": {
+    "PROMPT": "<|start_header_id|>user<|end_header_id|>\n\n{{{INPUT}}}}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "STOP": "<|eot_id|>"
+  }
+}
