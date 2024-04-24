@@ -11,7 +11,7 @@ while the test is running, it'll keep writing its results, so you can refresh th
 the neat thing about ENDPOINTS being an array in the config is that you can host multiple backends on e.g. runpod or vast to get through the test faster.
 
 # default chart example
-![demo screenshot](demo_matrix_2.png)
+![demo screenshot](demo_matrix_3.png)
 
 # legacy chart example
 ![demo screenshot](demo.png)

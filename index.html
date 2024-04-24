@@ -141,11 +141,8 @@
       yAxis.data.setAll([...new Set(data.map(y => y[y_category]))].map(y => ({[y_category]: y})).reverse());
       xAxis.data.setAll([...new Set(data.map(x => x[x_category]))].map(x => ({[x_category]: x})));
       chart.appear();
-
     });
   </script>
-
-  <!-- HTML -->
   <div id="chartdiv"></div>
 </body>
 
