@@ -9,7 +9,7 @@ no dependencies, just copy `config.example.json` to `config.json`, edit the opti
 while the test is running, it'll keep writing its results, so you can refresh the html page to see the progress so far, a new test run will overwrite it currently.
 
 # default chart example
-![demo screenshot](demo_matrix.png)
+![demo screenshot](demo_matrix_2.png)
 
 # legacy chart example
 ![demo screenshot](demo.png)
