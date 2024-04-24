@@ -21,6 +21,39 @@ const template = {
   results: {}
 }
 
+// https://stackoverflow.com/a/69219159
+async function* raceAsyncIterators(asyncIterators) {
+  async function nextResultWithItsIterator(iterator) {
+    return { result: await iterator.next(), iterator: iterator };
+  }
+  const promises = new Map();
+  for (const iterator of asyncIterators) {
+    promises.set(iterator, nextResultWithItsIterator(iterator));
+  }
+  while (promises.size) {
+    const { result, iterator } = await Promise.race(promises.values());
+    if (result.done) {
+      promises.delete(iterator);
+    } else {
+      promises.set(iterator, nextResultWithItsIterator(iterator));
+      yield result.value;
+    }
+  }
+}
+
+// https://stackoverflow.com/a/69219159
+async function* runTasks(maxConcurrency, taskIterator) {
+  async function* createWorkerIterator() {
+    for (const task of taskIterator) yield await task();
+  }
+
+  const asyncIterators = new Array(maxConcurrency);
+  for (let i = 0; i < maxConcurrency; i++) {
+    asyncIterators[i] = createWorkerIterator();
+  }
+  yield* raceAsyncIterators(asyncIterators);
+}
+
 !(async () => {
   let ENDPOINTS_INDEX = 0;
   for (let context_length = CONTEXT_LENGTH_START; context_length <= MODEL_CONTEXT_LENGTH; context_length += 1024) {
@@ -33,10 +66,10 @@ const template = {
 
         let pass = 0;
         let fail = 0;
+        const ENDPOINT = ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
         for (let needle_i = 0; needle_i < NEEDLE_ATTEMPTS; needle_i++) {
           const needle = generateRandomNeedle(NEEDLE_LENGTH)
           const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}${FG_RESET}`)
-          const ENDPOINT = ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
           const response = await predict(insertedText + "\n" + NEEDLE_QUESTION, TEMPLATE, MODEL_NAME, ENDPOINT.URL, ENDPOINT.API_KEY, TEMPERATURE)
           if (response.toLowerCase().includes(needle.toLowerCase())) {
             pass++
@@ -45,14 +78,14 @@ const template = {
           }
         }
 
-        console.log(`${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth}`)
         template.results[context_length] = [...(template.results?.[context_length] || []), { pass, fail, insertion_depth }]
         fs.writeFileSync("results.js", `const DATA = ${JSON.stringify(template)}`)
+        return `${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth} \t endpoint: ${ENDPOINT.URL}`
       })
     }
 
-    while (queue.length) {
-      await Promise.all(queue.splice(0, CONCURRENCY).map(f => f()))
+    for await (let value of runTasks(CONCURRENCY, queue.values())) {
+      console.log(value);
     }
   }
 })()
