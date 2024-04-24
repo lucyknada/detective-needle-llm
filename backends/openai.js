@@ -1,3 +1,10 @@
+const fetchRetry = async (url, options = {}, retries) => {
+  const res = await fetch(url, options)
+  if (res.ok) return res
+  if (retries > 0) return fetchRetry(url, options, retries - 1)
+  throw new Error(res.status)
+}
+
 module.exports = {
   predict: async (input, template, model, endpoint, api_key, temperature = 1) => {
     const payload = {
@@ -5,11 +12,11 @@ module.exports = {
       prompt: template.PROMPT.replace("{{{INPUT}}}", input),
       stream: false,
       temperature,
-      max_tokens: 512,
+      max_tokens: 256,
       stop: template.STOP
     };
 
-    let response = await fetch(endpoint + "/v1/completions", {
+    let response = await fetchRetry(endpoint + "/v1/completions", {
       method: "POST",
       body: JSON.stringify(payload),
       headers: {
@@ -17,12 +24,7 @@ module.exports = {
         "Authorization": `Bearer ${api_key}`,
         "x-api-key": api_key,
       },
-    });
-
-    if (!response.ok) {
-      console.log(response.status, await response.text());
-      process.exit(0);
-    }
+    }, 3);
 
     try {
       return (await response.json()).choices[0].text.trim();
