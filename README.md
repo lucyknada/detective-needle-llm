@@ -2,8 +2,16 @@
 
 # detective needle test
 
-a deterministic way to needle test without AI judges, compatible with all oAI endpoints, including tabby and vllm.
+a "deterministic"(1) way to needle test without AI judges, compatible with all oAI endpoints, including tabby and vllm.
 
-no dependencies, just copy `config.example.json` to `config.json`, edit the options and run `node index.js`, once done open up `index.html` in your webbrowser.
+no dependencies, just copy `config.example.json` to `config.json`, edit the options and run `node index.js`, once done open up `index.html` or `legacy.html` in your webbrowser.
 
+while the test is running, it'll keep writing its results, so you can refresh the html page to see the progress so far, a new test run will overwrite it currently.
+
+# default chart example
+![demo screenshot](demo_matrix.png)
+
+# legacy chart example
 ![demo screenshot](demo.png)
+
+(1) deterministic in quotes because there's no AI judge, the test itself was meant to allow the model to have multiple needle tests with temp 1, so no 2 runs will be the exact same unless you set temp 0

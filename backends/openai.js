@@ -1,9 +1,10 @@
 module.exports = {
-  predict: async (input, template, model, endpoint, api_key) => {
+  predict: async (input, template, model, endpoint, api_key, temp = 1) => {
     const payload = {
       model,
       prompt: template.PROMPT.replace("{{{INPUT}}}", input),
       stream: false,
+      temp,
       max_tokens: 512,
       stop: template.STOP
     };
