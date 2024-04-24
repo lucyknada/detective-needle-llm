@@ -2,7 +2,7 @@ const fs = require('fs');
 
 const { predict } = require('./backends/openai.js');
 const { insertString, trimText, generateRandomNeedle } = require('./util.js');
-const { MODEL_CONTEXT_LENGTH, NEEDLE_ATTEMPTS, MODEL_NAME, API_KEY, ENDPOINT, ENDPOINTS, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
+const { MODEL_CONTEXT_LENGTH, NEEDLE_ATTEMPTS, MODEL_NAME, ENDPOINTS, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
 
 const ORIGINAL_INPUT_TEXT = fs.readFileSync("text.txt", "utf-8")
 const NEEDLE_PREFIX_LENGTH = NEEDLE_PREFIX.length + 1
@@ -36,8 +36,8 @@ const template = {
         for (let needle_i = 0; needle_i < NEEDLE_ATTEMPTS; needle_i++) {
           const needle = generateRandomNeedle(NEEDLE_LENGTH)
           const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}${FG_RESET}`)
-          const ENDPOINT = ENDPOINT && API_KEY ? ENDPOINT : ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
-          const response = await predict(insertedText + "\n" + NEEDLE_QUESTION, TEMPLATE, MODEL_NAME, ENDPOINT.URL, API_KEY || ENDPOINT.API_KEY, TEMPERATURE)
+          const ENDPOINT = ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
+          const response = await predict(insertedText + "\n" + NEEDLE_QUESTION, TEMPLATE, MODEL_NAME, ENDPOINT.URL, ENDPOINT.API_KEY, TEMPERATURE)
           if (response.toLowerCase().includes(needle.toLowerCase())) {
             pass++
           } else {

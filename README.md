@@ -8,6 +8,8 @@ no dependencies, just copy `config.example.json` to `config.json`, edit the opti
 
 while the test is running, it'll keep writing its results, so you can refresh the html page to see the progress so far, a new test run will overwrite it currently.
 
+the neat thing about ENDPOINTS being an array in the config is that you can host multiple backends on e.g. runpod or vast to get through the test faster.
+
 # default chart example
 ![demo screenshot](demo_matrix_2.png)
 
