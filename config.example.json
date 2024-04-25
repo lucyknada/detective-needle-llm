@@ -7,7 +7,7 @@
   "SHOW_FAILURES": false,
   "NEEDLE_ATTEMPTS": 1,
   "MODEL_NAME": "casperhansen/llama-3-8b-instruct-awq",
-  "CONTEXT_LENGTH_START": 32000,
+  "CONTEXT_LENGTH_START": 1000,
   "NEEDLE_PREFIX": "Author note: the password is",
   "NEEDLE_QUESTION": "User: What is the password the author mentioned?",
   "NEEDLE_LENGTH": 36,
