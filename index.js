@@ -2,7 +2,7 @@ const fs = require('fs');
 
 const { predict } = require('./backends/openai.js');
 const { insertString, trimText, generateRandomNeedle } = require('./util.js');
-const { MODEL_CONTEXT_LENGTH, NEEDLE_ATTEMPTS, MODEL_NAME, ENDPOINTS, SHOW_FAILURES, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
+const { NEEDLE_ATTEMPTS, MODEL_NAME, ENDPOINTS, SHOW_FAILURES, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
 
 const ORIGINAL_INPUT_TEXT = fs.readFileSync("text.txt", "utf-8")
 const NEEDLE_PREFIX_LENGTH = NEEDLE_PREFIX.length + 3
@@ -15,7 +15,6 @@ const FG_RESET = "\x1b[0m"
 
 const template = {
   model: MODEL_NAME,
-  context: MODEL_CONTEXT_LENGTH,
   needle_attempts: NEEDLE_ATTEMPTS,
   temperature: TEMPERATURE,
   results: {}
@@ -56,11 +55,12 @@ async function* runTasks(maxConcurrency, taskIterator) {
 
 !(async () => {
   let ENDPOINTS_INDEX = 0;
-  for (let context_length = CONTEXT_LENGTH_START; context_length <= MODEL_CONTEXT_LENGTH; context_length += 1024) {
+  let CONSECUTIVE_FAILS = 0;
+  for (let context_length = CONTEXT_LENGTH_START; ; context_length += 1000) {
     const queue = []
-    for (let insertion_depth_i = 0; insertion_depth_i <= (context_length / 1024); insertion_depth_i++) {
+    for (let insertion_depth_i = 0; insertion_depth_i <= 100; insertion_depth_i += 10) {
       queue.push(async () => {
-        const insertion_depth = insertion_depth_i * 1024;
+        const insertion_depth = Math.ceil((context_length / 100) * insertion_depth_i);
         const input_text = trimText(ORIGINAL_INPUT_TEXT, context_length - NEEDLE_PREFIX.length - NEEDLE_LENGTH - NEEDLE_QUESTION_LENGTH - RESPONSE_LENGTH_ALLOWED - NEEDLE_PREFIX_LENGTH);
         const insert_at_index = Math.max(trimText(input_text, Math.min(input_text.length, insertion_depth)).lastIndexOf('.') + 1, 0)
 
@@ -79,9 +79,15 @@ async function* runTasks(maxConcurrency, taskIterator) {
           }
         }
 
-        template.results[context_length] = [...(template.results?.[context_length] || []), { pass, fail, insertion_depth }]
+        CONSECUTIVE_FAILS = (pass < fail ? CONSECUTIVE_FAILS + 1 : 0)
+        if (CONSECUTIVE_FAILS > 10) {
+          console.log("consecutive failures detected, exiting...")
+          process.exit(0)
+        }
+
+        template.results[context_length] = [...(template.results?.[context_length] || []), { pass, fail, insertion_depth: insertion_depth_i }]
         fs.writeFileSync("results.js", `const DATA = ${JSON.stringify(template)}`)
-        return `${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth} \t endpoint: ${ENDPOINT.URL}${FG_RESET}`
+        return `${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth} (${insertion_depth_i}%) \t endpoint: ${ENDPOINT.URL}${FG_RESET}`
       })
     }
 

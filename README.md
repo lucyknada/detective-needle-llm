@@ -13,7 +13,4 @@ the neat thing about ENDPOINTS being an array in the config is that you can host
 # default chart example
 ![demo screenshot](demo_matrix_3.png)
 
-# legacy chart example
-![demo screenshot](demo.png)
-
 (1) deterministic in quotes because there's no AI judge, the test itself was meant to allow the model to have multiple needle tests with temp 1, so no 2 runs will be the exact same unless you set temp 0

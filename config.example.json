@@ -1,12 +1,13 @@
 {
-  "ENDPOINTS": [{"URL": "http://localhost:5000", "API_KEY": ""}],
-  "TEMPERATURE": 1,
-  "CONCURRENCY": 5,
+  "ENDPOINTS": [
+    {"URL": "http://localhost:5000", "API_KEY": ""}
+  ],
+  "TEMPERATURE": 0,
+  "CONCURRENCY": 1,
   "SHOW_FAILURES": false,
   "NEEDLE_ATTEMPTS": 1,
   "MODEL_NAME": "casperhansen/llama-3-8b-instruct-awq",
-  "CONTEXT_LENGTH_START": 1024,
-  "MODEL_CONTEXT_LENGTH": 32768,
+  "CONTEXT_LENGTH_START": 32000,
   "NEEDLE_PREFIX": "Author note: the password is",
   "NEEDLE_QUESTION": "User: What is the password the author mentioned?",
   "NEEDLE_LENGTH": 36,

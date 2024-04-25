@@ -1,8 +1,9 @@
-const fetchRetry = async (url, options = {}, retries) => {
-  const res = await fetch(url, options)
-  if (res.ok) return res
-  if (retries > 0) return fetchRetry(url, options, retries - 1)
-  throw new Error(res.status)
+const fetchRetry = async (url, options = {}) => {
+  try {
+    const res = await fetch(url, options)
+    if (res.ok) return res
+  } catch (_) { }
+  return fetchRetry(url, options)
 }
 
 module.exports = {
@@ -24,7 +25,7 @@ module.exports = {
         "Authorization": `Bearer ${api_key}`,
         "x-api-key": api_key,
       },
-    }, 3);
+    });
 
     try {
       return (await response.json()).choices[0].text.trim();
