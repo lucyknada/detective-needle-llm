@@ -75,7 +75,7 @@ async function* runTasks(maxConcurrency, taskIterator) {
             pass++
           } else {
             fail++
-            if (SHOW_FAILURES) console.log("fail:", response)
+            if (SHOW_FAILURES) console.log(`${FG_RED}`, response)
           }
         }
 
