@@ -69,7 +69,7 @@ async function* runTasks(maxConcurrency, taskIterator) {
         const ENDPOINT = ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
         for (let needle_i = 0; needle_i < NEEDLE_ATTEMPTS; needle_i++) {
           const needle = generateRandomNeedle(NEEDLE_LENGTH)
-          const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}${FG_RESET}`)
+          const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}`)
           const response = await predict(insertedText + "\n" + NEEDLE_QUESTION, TEMPLATE, MODEL_NAME, ENDPOINT.URL, ENDPOINT.API_KEY, TEMPERATURE)
           if (response.toLowerCase().includes(needle.toLowerCase())) {
             pass++
@@ -80,7 +80,7 @@ async function* runTasks(maxConcurrency, taskIterator) {
 
         template.results[context_length] = [...(template.results?.[context_length] || []), { pass, fail, insertion_depth }]
         fs.writeFileSync("results.js", `const DATA = ${JSON.stringify(template)}`)
-        return `${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth} \t endpoint: ${ENDPOINT.URL}`
+        return `${fail < pass ? FG_GREEN : FG_RED}context: ${context_length} \t depth: ${insertion_depth} \t endpoint: ${ENDPOINT.URL}${FG_RESET}`
       })
     }
 
