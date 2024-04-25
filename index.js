@@ -2,10 +2,10 @@ const fs = require('fs');
 
 const { predict } = require('./backends/openai.js');
 const { insertString, trimText, generateRandomNeedle } = require('./util.js');
-const { MODEL_CONTEXT_LENGTH, NEEDLE_ATTEMPTS, MODEL_NAME, ENDPOINTS, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
+const { MODEL_CONTEXT_LENGTH, NEEDLE_ATTEMPTS, MODEL_NAME, ENDPOINTS, SHOW_FAILURES, NEEDLE_PREFIX, NEEDLE_QUESTION, TEMPLATE, CONCURRENCY, CONTEXT_LENGTH_START, NEEDLE_LENGTH, TEMPERATURE } = JSON.parse(fs.readFileSync("config.json", "utf-8"))
 
 const ORIGINAL_INPUT_TEXT = fs.readFileSync("text.txt", "utf-8")
-const NEEDLE_PREFIX_LENGTH = NEEDLE_PREFIX.length + 1
+const NEEDLE_PREFIX_LENGTH = NEEDLE_PREFIX.length + 3
 const NEEDLE_QUESTION_LENGTH = NEEDLE_QUESTION.length + 1
 const RESPONSE_LENGTH_ALLOWED = 512
 
@@ -69,12 +69,13 @@ async function* runTasks(maxConcurrency, taskIterator) {
         const ENDPOINT = ENDPOINTS[ENDPOINTS_INDEX++ % ENDPOINTS.length]
         for (let needle_i = 0; needle_i < NEEDLE_ATTEMPTS; needle_i++) {
           const needle = generateRandomNeedle(NEEDLE_LENGTH)
-          const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}`)
+          const insertedText = insertString(input_text, insert_at_index, `${NEEDLE_PREFIX} ${needle}. `)
           const response = await predict(insertedText + "\n" + NEEDLE_QUESTION, TEMPLATE, MODEL_NAME, ENDPOINT.URL, ENDPOINT.API_KEY, TEMPERATURE)
           if (response.toLowerCase().includes(needle.toLowerCase())) {
             pass++
           } else {
             fail++
+            if (SHOW_FAILURES) console.log("fail:", response)
           }
         }
 
