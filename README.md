@@ -10,6 +10,10 @@ while the test is running, it'll keep writing its results, so you can refresh th
 
 the neat thing about ENDPOINTS being an array in the config is that you can host multiple backends on e.g. runpod or vast to get through the test faster.
 
+# what is a needle test?
+
+A needle test allows testing the recall ability of an LLM. It works by inserting a tiny fact in a long context (LLM input), and then tests whether the LLM is capable of answering a question about this fact.
+
 # default chart example
 ![demo screenshot](demo_matrix_3.png)
 
