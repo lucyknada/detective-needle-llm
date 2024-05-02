@@ -14,7 +14,7 @@ the neat thing about ENDPOINTS being an array in the config is that you can host
 
 A needle test allows testing the recall ability of an LLM. It works by inserting a tiny fact in a long context (LLM input), and then tests whether the LLM is capable of answering a question about this fact.
 
-# default chart example
+# chart example
 ![demo screenshot](demo_matrix_3.png)
 
 (1) deterministic in quotes because there's no AI judge, the test itself was meant to allow the model to have multiple needle tests with temp 1, so no 2 runs will be the exact same unless you set temp 0
