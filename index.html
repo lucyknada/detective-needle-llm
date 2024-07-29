@@ -14,7 +14,7 @@
       margin: 0;
       padding: 0;
     }
-    #chartdiv {
+    .chart {
       width: 100%;
       height: 300px;
     }
@@ -24,8 +24,138 @@
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
   <script type="text/javascript" src="results.js"></script>
   <script>
-    const y_category = "insertion_depth"
-    const x_category = "context_length"
+    function add_graph(data) {
+      const y_category = "insertion_depth"
+      const x_category = "context_length"
+
+      const prettifyNumber = (number) => {
+          return Intl.NumberFormat('en-US', {
+              notation: "compact",
+              maximumFractionDigits: 1
+          }).format(number);
+      }
+
+      am5.ready(function () {
+        const chart_div = document.createElement("div");
+        const chart_id = "root-" + document.querySelectorAll(".chart").length;
+        chart_div.id = chart_id;
+        chart_div.className = "chart"
+        document.body.appendChild(chart_div);
+
+        const root = am5.Root.new(chart_id);
+        root._logo.dispose();
+        root.setThemes([
+          am5themes_Animated.new(root)
+        ]);
+        const chart = root.container.children.push(am5xy.XYChart.new(root, {
+          panX: false,
+          panY: false,
+          wheelX: "none",
+          wheelY: "none",
+          paddingLeft: 0,
+          layout: root.verticalLayout,
+          title: "test"
+        }));
+        chart.children.unshift(am5.Label.new(root, {
+          text: `${DATA.model} - ${DATA.needle_attempts} attempt(s) - ${DATA.temperature !== undefined ? DATA.temperature : 1} temp - lucyknada/detective-needle-llm (github)`,
+          fontSize: 15,
+          fontWeight: "500",
+          textAlign: "center",
+          x: am5.percent(50),
+          centerX: am5.percent(50),
+          paddingTop: 0,
+          paddingBottom: 20
+        }));
+        const yRenderer = am5xy.AxisRendererY.new(root, {
+          minGridDistance: 20,
+          inversed: true,
+          minorGridEnabled: true
+        });
+        const yAxis = chart.yAxes.push(am5xy.CategoryAxis.new(root, {
+          maxDeviation: 0,
+          renderer: yRenderer,
+          categoryField: y_category
+        }));
+        const xRenderer = am5xy.AxisRendererX.new(root, {
+          minGridDistance: 1,
+          grid: {
+            template: {
+              visible: false,
+            }
+          }
+        });
+        xRenderer.labels.template.adapters.add("text", function(text, target) {
+          if (target.dataItem && target.dataItem.dataContext) {
+            return prettifyNumber(target.dataItem.dataContext.context_length)
+          }
+          return text;
+        });
+        yRenderer.grid.template.set("visible", true);
+        xRenderer.grid.template.set("visible", true);
+        yRenderer.labels.template.setAll({
+          fontSize: 12
+        });
+        xRenderer.labels.template.setAll({
+          rotation: -90,
+          fontSize: 11,
+          centerY: am5.p50,
+          centerX: am5.p100,
+          paddingRight: 15
+        });
+        const xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+          renderer: xRenderer,
+          categoryField: x_category
+        }));
+        xAxis.children.push(am5.Label.new(root, {
+          text: `context length in characters`,
+          textAlign: 'center',
+          fontSize: 12,
+          x: am5.p50,
+          fontWeight: 'bold'
+        }));
+        yAxis.children.unshift(am5.Label.new(root, {
+          text: "depth",
+          textAlign: 'center',
+          fontSize: 12,
+          y: am5.p50,
+          rotation: -90,
+          fontWeight: 'bold'
+        }));
+        const series = chart.series.push(am5xy.ColumnSeries.new(root, {
+          calculateAggregates: true,
+          stroke: am5.color(0xffffff),
+          clustered: false,
+          xAxis: xAxis,
+          yAxis: yAxis,
+          categoryXField: x_category,
+          categoryYField: y_category,
+          valueField: "value"
+        }));
+        series.columns.template.setAll({
+          strokeOpacity: 1,
+          strokeWidth: 2,
+          width: am5.percent(100),
+          height: am5.percent(100)
+        });
+        series.set("heatRules", [{
+          target: series.columns.template,
+          customFunction: function(sprite, min, max, value) {
+            if (sprite._dataItem.dataContext.pass > sprite._dataItem.dataContext.fail) {
+              sprite.set("fill", am5.color(0x13fe82));
+            } else {
+              sprite.set("fill", am5.color(0xfe131a));
+            }
+          },
+          dataField: "value",
+          key: "fill"
+        }]);
+
+        series.data.setAll(data);
+        yAxis.data.setAll([...new Set(data.map(y => y[y_category]))].map(y => ({[y_category]: y})).sort((a,b) => parseInt(b.insertion_depth)-parseInt(a.insertion_depth)));
+        xAxis.data.setAll([...new Set(data.map(x => x[x_category]))].map(x => ({[x_category]: x})));
+        chart.appear();
+      });
+    }
 
     let data = []
     for (const [context_length, tests] of Object.entries(DATA.results)) {
@@ -39,127 +169,9 @@
       }
     }
 
-    const prettifyNumber = (number) => {
-        return Intl.NumberFormat('en-US', {
-            notation: "compact",
-            maximumFractionDigits: 1
-        }).format(number);
+    while (data.length) {
+      add_graph(data.splice(0, 100*10 + 1))
     }
-
-    am5.ready(function () {
-      const root = am5.Root.new("chartdiv");
-      root._logo.dispose();
-      root.setThemes([
-        am5themes_Animated.new(root)
-      ]);
-      const chart = root.container.children.push(am5xy.XYChart.new(root, {
-        panX: false,
-        panY: false,
-        wheelX: "none",
-        wheelY: "none",
-        paddingLeft: 0,
-        layout: root.verticalLayout,
-        title: "test"
-      }));
-      chart.children.unshift(am5.Label.new(root, {
-        text: `${DATA.model} - ${DATA.needle_attempts} attempt(s) - ${DATA.temperature !== undefined ? DATA.temperature : 1} temp - lucyknada/detective-needle-llm (github)`,
-        fontSize: 15,
-        fontWeight: "500",
-        textAlign: "center",
-        x: am5.percent(50),
-        centerX: am5.percent(50),
-        paddingTop: 0,
-        paddingBottom: 20
-      }));
-      const yRenderer = am5xy.AxisRendererY.new(root, {
-        minGridDistance: 20,
-        inversed: true,
-        minorGridEnabled: true
-      });
-      const yAxis = chart.yAxes.push(am5xy.CategoryAxis.new(root, {
-        maxDeviation: 0,
-        renderer: yRenderer,
-        categoryField: y_category
-      }));
-      const xRenderer = am5xy.AxisRendererX.new(root, {
-        minGridDistance: 1,
-        grid: {
-          template: {
-            visible: false,
-          }
-        }
-      });
-      xRenderer.labels.template.adapters.add("text", function(text, target) {
-        if (target.dataItem && target.dataItem.dataContext) {
-          return prettifyNumber(target.dataItem.dataContext.context_length)
-        }
-        return text;
-      });
-      yRenderer.grid.template.set("visible", true);
-      xRenderer.grid.template.set("visible", true);
-      yRenderer.labels.template.setAll({
-        fontSize: 12
-      });
-      xRenderer.labels.template.setAll({
-        rotation: -90,
-        fontSize: 11,
-        centerY: am5.p50,
-        centerX: am5.p100,
-        paddingRight: 15
-      });
-      const xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
-        renderer: xRenderer,
-        categoryField: x_category
-      }));
-      xAxis.children.push(am5.Label.new(root, {
-        text: `context length in characters`,
-        textAlign: 'center',
-        fontSize: 12,
-        x: am5.p50,
-        fontWeight: 'bold'
-      }));
-      yAxis.children.unshift(am5.Label.new(root, {
-        text: "depth",
-        textAlign: 'center',
-        fontSize: 12,
-        y: am5.p50,
-        rotation: -90,
-        fontWeight: 'bold'
-      }));
-      const series = chart.series.push(am5xy.ColumnSeries.new(root, {
-        calculateAggregates: true,
-        stroke: am5.color(0xffffff),
-        clustered: false,
-        xAxis: xAxis,
-        yAxis: yAxis,
-        categoryXField: x_category,
-        categoryYField: y_category,
-        valueField: "value"
-      }));
-      series.columns.template.setAll({
-        strokeOpacity: 1,
-        strokeWidth: 2,
-        width: am5.percent(100),
-        height: am5.percent(100)
-      });
-      series.set("heatRules", [{
-        target: series.columns.template,
-        customFunction: function(sprite, min, max, value) {
-          if (sprite._dataItem.dataContext.pass > sprite._dataItem.dataContext.fail) {
-            sprite.set("fill", am5.color(0x13fe82));
-          } else {
-            sprite.set("fill", am5.color(0xfe131a));
-          }
-        },
-        dataField: "value",
-        key: "fill"
-      }]);
-
-      series.data.setAll(data);
-      yAxis.data.setAll([...new Set(data.map(y => y[y_category]))].map(y => ({[y_category]: y})).sort((a,b) => parseInt(b.insertion_depth)-parseInt(a.insertion_depth)));
-      xAxis.data.setAll([...new Set(data.map(x => x[x_category]))].map(x => ({[x_category]: x})));
-      chart.appear();
-    });
   </script>
   <div id="chartdiv"></div>
 </body>
