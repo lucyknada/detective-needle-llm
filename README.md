@@ -17,7 +17,9 @@ the neat thing about ENDPOINTS being an array in the config is that you can host
 
 A needle test allows testing the recall ability of an LLM. It works by inserting a tiny fact in a long context (LLM input), and then tests whether the LLM is capable of answering a question about this fact.
 
-# chart example
+# chart examples
+![image](multi_graph.jpeg)
+
 ![image](https://github.com/lucyknada/detective-needle-llm/assets/154630366/f6a6e1c1-8b8a-4772-b343-b51db3aa604f)
 
 # historical charts
