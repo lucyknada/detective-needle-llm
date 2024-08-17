@@ -20,6 +20,8 @@ A needle test allows testing the recall ability of an LLM. It works by inserting
 # chart examples
 ![image](multi_graph.jpeg)
 
+![graph](https://github.com/user-attachments/assets/4a523d80-d871-4c07-b51d-c8933fe96113)
+
 ![image](https://github.com/lucyknada/detective-needle-llm/assets/154630366/f6a6e1c1-8b8a-4772-b343-b51db3aa604f)
 
 # historical charts
