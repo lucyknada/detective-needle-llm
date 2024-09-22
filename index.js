@@ -54,9 +54,16 @@ async function* runTasks(maxConcurrency, taskIterator) {
 }
 
 !(async () => {
+  fs.writeFileSync("failures.jsonl", "")
+
   let ENDPOINTS_INDEX = 0;
   let CONSECUTIVE_FAILS = 0;
   for (let context_length = CONTEXT_LENGTH_START; ; context_length += 1000) {
+    if (CONSECUTIVE_FAILS > 10) {
+      console.log("consecutive failures detected, exiting...")
+      process.exit(0)
+    }
+
     const queue = []
     for (let insertion_depth_i = 0; insertion_depth_i <= 100; insertion_depth_i += 10) {
       queue.push(async () => {
@@ -75,15 +82,12 @@ async function* runTasks(maxConcurrency, taskIterator) {
             pass++
           } else {
             fail++
-            if (SHOW_FAILURES) console.log(`${FG_RED}`, response)
+            if (SHOW_FAILURES) console.log(`${FG_RED}`, response);
+            fs.appendFileSync("failures.jsonl", JSON.stringify({ context: context_length, depth: insertion_depth, depth_percent: insertion_depth_i, needle: needle.toLowerCase(), failure: response.toLowerCase() }) + "\n")
           }
         }
 
         CONSECUTIVE_FAILS = (pass < fail ? CONSECUTIVE_FAILS + 1 : 0)
-        if (CONSECUTIVE_FAILS > 10) {
-          console.log("consecutive failures detected, exiting...")
-          process.exit(0)
-        }
 
         template.results[context_length] = [...(template.results?.[context_length] || []), { pass, fail, insertion_depth: insertion_depth_i }]
         fs.writeFileSync("results.js", `const DATA = ${JSON.stringify(template)}`)
